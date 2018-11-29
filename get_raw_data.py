@@ -3,21 +3,15 @@ import pandas as pd
 
 r = requests.get('https://coinmetrics.io/api/v1/get_supported_assets')  
 
-assets = r.json()
+assets = r.json() # List of Symbols
 
 def get_asset_data_types(asset): # -> List<Str>
     """Returns a list of columns for a particular given asset"""
     return requests.get('https://coinmetrics.io/api/v1/get_available_data_types_for_asset/{}'.format(asset)).json()['result']
 
-asset_data_types_dict = {asset:get_asset_data_types(asset) for asset in assets}
-"""
-Dict(Str -> Dict(...))
-or
-Dict(Str -> List<Str>)
-"""
-#import datetime
+asset_columns_dict = {asset:get_asset_data_types(asset) for asset in assets}
+
 from datetime import datetime
-#from datetime import timezone
 import time
 
 def date_to_unix(d): # Str -> Int
@@ -44,62 +38,23 @@ def get_asset_data_for_time_range(asset, col_name, begin_timestamp, end_timestam
                        format(asset,col_name, begin_timestamp,end_timestamp))
     req.json()
     return req.json()['result']
-#print(get_asset_data_for_time_range('ltc','medianfee',date_to_unix('2010-01-01'),date_today))
-
-#ll = get_asset_data_for_time_range('ltc','medianfee',date_to_unix('2010-01-01'),date_today)
-#print( {l[0]:l[1] for l in ll} )
-#print( pd.Series({l[0]:l[1] for l in ll}) )
-#del ll
 
 def get_dataframe(asset):
     """Returns a DataFrame Containing the column names and the historical data"""
-    cols = asset_data_types_dict[asset] # List of Column Names
+    cols = asset_columns_dict[asset] # List of Column Names
     frame_dict = dict()
-    # For each available column in asset
+    # For each available column in asset,
     for col in cols:
         # Create a Dict(Column Name -> pandas.Series)
         ll = get_asset_data_for_time_range(asset,col,date_to_unix(start_date),date_today)
         frame_dict[col] = pd.Series({datetime.strptime(unix_to_date(l[0]), '%Y-%m-%d'):l[1] for l in ll})
     return pd.DataFrame(frame_dict)
 
-#datetime.strptime(unix_to_date(1542412800), '%Y-%m-%d') to convert Unix (Int) -> Datetime
-
-asset_frames = dict()
-for asset in assets:
-    asset_frames[asset] = get_dataframe(asset)
-
-
-btc = asset_frames['btc']['price(usd)']
-del btc
-
+# Create a dictionary to keep track all asset DataFrames
 # Export to CSV
 for asset in assets:
-    # Export csv in .\data\RawData
-    get_dataframe(asset).to_csv(".\data\RawData\{}.csv".format(asset))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    get_dataframe(asset).to_csv(".\data\RawData\{}.csv".format(asset),index_label='Date')  # Export csv in .\data\RawData
+del asset
 
 
 

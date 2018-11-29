@@ -1,4 +1,4 @@
-,activeaddresses,exchangevolume(usd),marketcap(usd),mediantxvalue(usd),price(usd),txcount,txvolume(usd)
+Date,activeaddresses,exchangevolume(usd),marketcap(usd),mediantxvalue(usd),price(usd),txcount,txvolume(usd)
 2017-09-19,3.0,,,,,2.0,
 2017-09-20,7802.0,,,,,7801.0,
 2017-09-21,,,,,,,
